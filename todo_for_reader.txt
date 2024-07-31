@@ -1,0 +1,32 @@
+Input string:
+	1. Validate number of arguments:
+		a. If len(arguments) > 6: ERROR("An Error Has Occurred")
+		b. If len(arguments) == 6:
+			i. Validate correctness of each argument.
+			ii. Assign arguments accordingly.
+		c. If len(arguments) == 5:
+			i. Validate what argument is missing.
+			ii. If iter is missing: add MAX_ITER as argument and proceed to (2).
+			iii. else: ERROR("An Error Has Occurred")
+		d. If len(arguments) < 5: ERROR("An Error Has Occurred")
+	2. Assign each argument to matching attribute.
+
+Data files:
+	1. Parse if .csv or .txt
+	2. Open according to (1)
+	3. Inner join files using pd
+	4. Set `datapoints_df`
+	5. Count number of datapoints
+	6. Set `n` to result of (4)
+
+K:
+	1. Validate: K is natural && K > 1 && K < n.
+	2. Else: ERROR("Invalid number of clusters!")
+	
+	(D) iter:
+	1. Validate: iter is natural && iter > 1 && iter < 1000.
+	2. Else: ERROR("Inavlid maximum iteration!")
+
+Epsilon:
+	1. Validate: epsilon >= 0.
+	2. Else: ERROR("Invalid epsilon!")
