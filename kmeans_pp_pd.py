@@ -1,5 +1,5 @@
 import sys
-from enum import Enum
+from enum import IntEnum, StrEnum
 import pandas as pd
 import numpy as np
 
@@ -9,15 +9,17 @@ EPSILON = 0.001
 
 NP_RANDOM_SEED = 1234
 
-INVALID_K_ERROR_MSG = "Invalid number of clusters!"
-INVALID_ITER_ERROR_MSG = "Invalid maximum iteration!"
-INVALID_FILE_NAME_ERROR_MSG = "Invalid file names!"
-INVALID_EPSILON_ERROR_MSG = "Invalid epsilon!"
-GENERAL_ERROR_MSG = "An Error Has Occurred"
+
+class ErrorMessages(StrEnum):
+	INVALID_K_ERROR_MSG = "Invalid number of clusters!"
+	INVALID_ITER_ERROR_MSG = "Invalid maximum iteration!"
+	INVALID_FILE_NAME_ERROR_MSG = "Invalid file names!"
+	INVALID_EPSILON_ERROR_MSG = "Invalid epsilon!"
+	GENERAL_ERROR_MSG = "An Error Has Occurred"
 
 
 # Example of a script call: `python3 kmeans_pp.py 3 100 0.01 input_1.txt input_2.txt`
-class ArgumentIndex(Enum):
+class ArgumentIndex(IntEnum):
 	PYTHON_CALL = 0
 	PY_FILE = 1
 	K = 2
@@ -49,38 +51,65 @@ class CommandLineReader:
 		self.file1_url = str(cmd_input[ArgumentIndex.FILE1_URL.value])
 		self.file2_url = str(cmd_input[ArgumentIndex.FILE2_URL.value])
 
-	@classmethod
+	@staticmethod
 	# Checks whether the string `n` represents a natural number(0 excluded)
 	def is_natural(n) -> bool:
 		return str(n).isdigit() and float(n) == int(n) and int(n) > 0
 
 	@classmethod
 	# Retrieves the file URL suffix (hence type)
-	def get_file_suffix(file_url: str) -> str:
+	def get_file_suffix(cls, file_url: str) -> str:
 		return file_url.split(".")[-1]
 
 	@classmethod
 	# Validates that the passed URL is either a txt or csv file.
-	def is_valid_file_url(url: str) -> bool:
-		return Kmeans.CommandLineReader.get_file_suffix(file_url=url) in {".csv", ".txt"}
+	def is_valid_file_url(cls, url: str) -> bool:
+		return cls.get_file_suffix(file_url=url) in {".csv", ".txt"}
+
+	@classmethod
+	def is_valid_arg(cls, arg_type: ArgumentIndex, arg_value: str) -> bool:
+		match arg_type:
+			case ArgumentIndex.K:
+				return cls.is_natural(arg_value)
+			case ArgumentIndex.EPSILON:
+				return arg_value.isnumeric() and int(arg_value) >= 0
+			case ArgumentIndex.FILE1_URL:
+				return cls.is_valid_file_url(url=arg_value)
+			case ArgumentIndex.FILE2_URL:
+				return cls.is_valid_file_url(url=arg_value)
+			case ArgumentIndex.ITER:
+				cls.is_natural(arg_value) and 1 < int(arg_value) < MAX_ITER
+			case _:
+				return False
+
+	@classmethod
+	def print_invalid_arg_error(cls, arg_type: ArgumentIndex):
+		match arg_type:
+			case ArgumentIndex.K:
+				print(ErrorMessages.INVALID_K_ERROR_MSG.value)
+			case ArgumentIndex.EPSILON:
+				print(ErrorMessages.INVALID_EPSILON_ERROR_MSG.value)
+			case ArgumentIndex.FILE1_URL:
+				print(ErrorMessages.INVALID_FILE_NAME_ERROR_MSG.value)
+			case ArgumentIndex.FILE2_URL:
+				print(ErrorMessages.INVALID_FILE_NAME_ERROR_MSG.value)
+			case ArgumentIndex.ITER:
+				print(ErrorMessages.INVALID_ITER_ERROR_MSG.value)
+			case _:
+				print(ErrorMessages.GENERAL_ERROR_MSG.value)
 
 	@classmethod
 	# Validates to correctness of the passed cmd command and returns errors as requested in the assignment
 	def validate_cmd_arguments(cls, arguments_list: list) -> None:
 		# Assert number of arguments passed
-		assert len(arguments_list) == 6, GENERAL_ERROR_MSG
-		# Assert K
-		assert Kmeans.CommandLineReader.is_natural(arguments_list[ArgumentIndex.K.value]), INVALID_K_ERROR_MSG
-		# Assert iter
-		assert (Kmeans.CommandLineReader.is_natural(arguments_list[ArgumentIndex.ITER.value]) and 1 < arguments_list[
-			ArgumentIndex.ITER.value] < MAX_ITER), INVALID_ITER_ERROR_MSG
-		# Assert epsilon
-		assert (arguments_list[ArgumentIndex.EPSILON.value].isnumeric() and arguments_list[
-			ArgumentIndex.EPSILON.value] >= 0), INVALID_EPSILON_ERROR_MSG
-		# Assert file names
-		assert (Kmeans.CommandLineReader.is_valid_file_url(
-			url=arguments_list[ArgumentIndex.FILE1_URL.value]) and Kmeans.CommandLineReader.is_valid_file_url(
-			url=arguments_list[ArgumentIndex.FILE2_URL.value])), INVALID_FILE_NAME_ERROR_MSG
+		if len(arguments_list) != 6:
+			print(ErrorMessages.GENERAL_ERROR_MSG)
+			sys.exit(1)
+
+		for arg in ArgumentIndex:
+			if not cls.is_valid_arg(arg_type=arg, arg_value=arguments_list[arg]):
+				cls.print_invalid_arg_error(arg_type=arg)
+				sys.exit(1)
 
 
 class DFHandler:
