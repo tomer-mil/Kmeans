@@ -1,3 +1,4 @@
+import array
 import sys
 from enum import IntEnum, StrEnum
 import pandas as pd
@@ -9,7 +10,7 @@ EPSILON = 0.001
 
 NP_RANDOM_SEED = 1234
 
-WAS_SELECTED_AS_CENTROID_COL_NAME = 'wasSelectedAsCentroid'
+IS_CENTROID_COL_NAME = 'wasSelectedAsCentroid'
 D_VALUE_COL_NAME = 'D'
 
 
@@ -145,7 +146,7 @@ class DFHandler:
 	def join_dfs(self) -> pd.DataFrame:
 		joined_df = self.df1.join(self.df2, how='inner', on=str(self.ID_COL), sort=True)
 		joined_df.insert(loc=len(joined_df.columns), column=D_VALUE_COL_NAME, value=np.zeros(joined_df.shape[1]))
-		joined_df.insert(loc=len(joined_df.columns), column=WAS_SELECTED_AS_CENTROID_COL_NAME, value=np.zeros(joined_df.shape[1]))
+		joined_df.insert(loc=len(joined_df.columns), column=IS_CENTROID_COL_NAME, value=np.zeros(joined_df.shape[1]))
 		return joined_df
 
 
@@ -184,18 +185,22 @@ class KmeansPPInitializer:
 		# Set random probability: if this is the first cluster, set uniform probability, else calc P
 		probability = self.calc_P() if not self.clusters_df.shape[0] == 0 else None
 
-		return np.random.choice(self.datapoints_df[self.datapoints_df[WAS_SELECTED_AS_CENTROID_COL_NAME] == 0].index, p=probability)
+		return np.random.choice(self.datapoints_df.index, p=probability)
 
 	# Given a random index, marks the vector in that index as selected and adds it to the clusters df
 	def add_new_random_centroid(self) -> None:
 		new_centroid_index = self.get_random_index()
-		self.datapoints_df[new_centroid_index][WAS_SELECTED_AS_CENTROID_COL_NAME] = 1
+		self.datapoints_df.iloc[new_centroid_index, [IS_CENTROID_COL_NAME]] = 1
 		self.clusters_df = pd.concat(objs=[self.clusters_df, self.datapoints_df.loc[new_centroid_index]], ignore_index=True, axis=0)
 
 	# Calculates and sets the new D values of all non-cluster vectors
 	def calc_d(self):
-		distances = self.euclidian_distance(point1=self.datapoints_df[self.datapoints_df[WAS_SELECTED_AS_CENTROID_COL_NAME == 0]], point2=self.clusters_df[-1])
+		distances = self.euclidian_distance(point1=self.datapoints_df[self.datapoints_df[IS_CENTROID_COL_NAME == 0]], point2=self.clusters_df.tail(1))
 		self.datapoints_df.where(cond=self.datapoints_df[D_VALUE_COL_NAME] <= distances, other=distances, inplace=True)
-
+		# set D(x) = 0 for datapoints selected as centroids.
+		self.datapoints_df.loc[self.datapoints_df[IS_CENTROID_COL_NAME] == 0, [D_VALUE_COL_NAME]] = 0 
+	
 	# Calculates and sets the P value of non-cluster vectors per new cluster addition
-	def calc_P(self):
+	def calc_P(self) -> np.array:
+		D_sum = self.datapoints_df[D_VALUE_COL_NAME].sum(axis=1)
+		return self.datapoints_df.loc[D_VALUE_COL_NAME] / D_sum
