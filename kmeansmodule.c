@@ -141,3 +141,27 @@ static PyObject* GetList(PyObject* self, PyObject* args)
     }
     return python_val;
 }
+
+static PyMethodDef kmeans_FunctionsTable[] = {
+    {
+        "run_kmeans", // name exposed to Python
+        fit, // C wrapper function
+        METH_VARARGS, // received variable args (but really just 1)
+        "runs the kmeans algoritm as requested, except from centroids initialization" // documentation
+    }, {
+        NULL, NULL, 0, NULL
+    }
+};
+
+// modules definition
+static struct PyModuleDef kmeans_Module = {
+    PyModuleDef_HEAD_INIT,
+    "mykmeanssp",     // name of module exposed to Python
+    "kmeans Python wrapper for kmeans C implementation.", // module documentation
+    -1,
+    kmeans_FunctionsTable
+};
+
+PyMODINIT_FUNC PyInit_kmeans(void) {
+    return PyModule_Create(&kmeans_Module);
+}
