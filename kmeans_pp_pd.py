@@ -184,9 +184,11 @@ class KmeansPPInitializer:
 
 	# Generates a random vector index based on the probability function P or uniformly if first vector
 	def get_random_index(self) -> int:
+		probability = None
 		# Set random probability: if this is the first cluster, set uniform probability, else calc P
-		probability = self.calc_P() if not self.clusters_df.shape[0] == 0 else None
-
+		if not self.clusters_df.empty:
+			self.calc_d()
+			probability = self.calc_P()
 		return np.random.choice(self.datapoints_df.index, p=probability)
 
 	# Given a random index, marks the vector in that index as selected and adds it to the clusters df
