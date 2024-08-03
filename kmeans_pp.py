@@ -72,35 +72,33 @@ class CommandLineReader:
 
 	@classmethod
 	def is_valid_arg(cls, arg_type: Argument, arg_value: str) -> bool:
-		match arg_type:
-			case Argument.K:
-				return cls.is_natural(arg_value)
-			case Argument.EPSILON:
-				return arg_value.isnumeric() and int(arg_value) >= 0
-			case Argument.FILE1_URL:
-				return cls.is_valid_file_url(url=arg_value)
-			case Argument.FILE2_URL:
-				return cls.is_valid_file_url(url=arg_value)
-			case Argument.ITER:
-				cls.is_natural(arg_value) and 1 < int(arg_value) < MAX_ITER
-			case _:
-				return False
+		if arg_type == Argument.K:
+			return cls.is_natural(arg_value)
+		elif arg_type == Argument.EPSILON:
+			return arg_value.isnumeric() and int(arg_value) >= 0
+		elif arg_type == Argument.FILE1_URL:
+			return cls.is_valid_file_url(url=arg_value)
+		elif arg_type == Argument.FILE2_URL:
+			return cls.is_valid_file_url(url=arg_value)
+		elif arg_type == Argument.ITER:
+			cls.is_natural(arg_value) and 1 < int(arg_value) < MAX_ITER
+		else:
+			return False
 
 	@classmethod
 	def print_invalid_arg_error(cls, arg_type: Argument):
-		match arg_type:
-			case Argument.K:
-				print(ErrorMessages.INVALID_K_ERROR_MSG.value)
-			case Argument.EPSILON:
-				print(ErrorMessages.INVALID_EPSILON_ERROR_MSG.value)
-			case Argument.FILE1_URL:
-				print(ErrorMessages.INVALID_FILE_NAME_ERROR_MSG.value)
-			case Argument.FILE2_URL:
-				print(ErrorMessages.INVALID_FILE_NAME_ERROR_MSG.value)
-			case Argument.ITER:
-				print(ErrorMessages.INVALID_ITER_ERROR_MSG.value)
-			case _:
-				print(ErrorMessages.GENERAL_ERROR_MSG.value)
+		if arg_type ==  Argument.K:
+			print(ErrorMessages.INVALID_K_ERROR_MSG.value)
+		elif arg_type == Argument.EPSILON:
+			print(ErrorMessages.INVALID_EPSILON_ERROR_MSG.value)
+		elif arg_type == Argument.FILE1_URL:
+			print(ErrorMessages.INVALID_FILE_NAME_ERROR_MSG.value)
+		elif arg_type == Argument.FILE2_URL:
+			print(ErrorMessages.INVALID_FILE_NAME_ERROR_MSG.value)
+		elif arg_type == Argument.ITER:
+			print(ErrorMessages.INVALID_ITER_ERROR_MSG.value)
+		else:
+			print(ErrorMessages.GENERAL_ERROR_MSG.value)
 
 	@classmethod
 	# Validates to correctness of the passed cmd command and returns errors as requested in the assignment
