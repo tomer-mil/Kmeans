@@ -45,8 +45,7 @@ class CommandLineReader:
 	def __init__(self, cmd_input: list):
 		if len(cmd_input) == 5:
 			# Assuming no `iter` provided, adding default iteration value
-			cmd_input = cmd_input[Argument.PYTHON_CALL.value:Argument.K.value] + [DEFAULT_ITER] + cmd_input[
-																								  Argument.K.value:]
+			cmd_input = cmd_input[Argument.PYTHON_CALL.value:Argument.K.value] + [DEFAULT_ITER] + cmd_input[Argument.K.value:]
 
 		self.validate_cmd_arguments(arguments_list=cmd_input)
 
@@ -201,11 +200,12 @@ class KmeansPPInitializer:
 		distances = self.euclidian_distance(point1=self.datapoints_df[self.datapoints_df[IS_CENTROID_COL_NAME == 0]], point2=self.clusters_df.tail(1))
 		self.datapoints_df.where(cond=self.datapoints_df[D_VALUE_COL_NAME] <= distances, other=distances, inplace=True)
 		# set D(x) = 0 for datapoints selected as centroids.
-		self.datapoints_df.loc[self.datapoints_df[IS_CENTROID_COL_NAME] == 0, [D_VALUE_COL_NAME]] = 0 
+		self.datapoints_df.loc[self.datapoints_df[IS_CENTROID_COL_NAME] == 1, [D_VALUE_COL_NAME]] = 0
 	
 	# Calculates and sets the P value of non-cluster vectors per new cluster addition
 	def calc_P(self) -> np.array:
 		D_sum = self.datapoints_df[D_VALUE_COL_NAME].sum(axis=1)
+		# Calc P for entire column
 		return self.datapoints_df.loc[D_VALUE_COL_NAME] / D_sum
 	
 	# relevant for output
@@ -228,7 +228,7 @@ class KmeansPPRunner:
 	final_clusters: list[list]
 
 	def __init__(self, initialized_Kmeans: KmeansPPInitializer):
-		initialized_Kmeans = KmeansPPInitializer()
+		self.initialized_Kmeans = initialized_Kmeans
 
 	@staticmethod
 	def df_to_list_of_lists(df):
@@ -240,8 +240,13 @@ class KmeansPPRunner:
 
 	def runKmeansPP(self):
 		self.initialized_Kmeans.initialize_centroids()
-		final_clusters = mykmeanssp.fit(self.initialized_Kmeans.datapoints_df, self.initialized_Kmeans.clusters_df, self.initialized_Kmeans.iter, self.initialized_Kmeans.k, self.initialized_Kmeans.n)
+		self.final_clusters = mykmeanssp.run_kmeans(self.initialized_Kmeans.datapoints_df, self.initialized_Kmeans.clusters_df, self.initialized_Kmeans.iter, self.initialized_Kmeans.k, self.initialized_Kmeans.n)
+		self.print_output()
 
 
+if __name__ == '__main__':
+	initialized_kmeans = KmeansPPInitializer()
+	runner = KmeansPPRunner(initialized_Kmeans=initialized_kmeans)
+	runner.runKmeansPP()
 
 
