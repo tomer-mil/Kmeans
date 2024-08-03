@@ -96,7 +96,7 @@ void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, 
 }
 
 
-Point* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
+Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
     int num_points, dimension;
     int iteration, done_clusters, i, j;
     Cluster* clusters;
@@ -134,6 +134,5 @@ Point* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
 
         iteration++;
     }
-
     return clusters;
 }

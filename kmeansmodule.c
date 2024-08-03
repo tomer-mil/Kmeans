@@ -16,13 +16,13 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     }
 
     // parse initialized clusters' centroids from python to C
-    Point* centroids = PyPointsLst_AsPointsArr(&centroids_lst, k);
+    Point* centroids = PyPointsLst_AsPointsArr(centroids_lst, k);
     if (!centroids)  {
         return NULL;
     }
 
     // parse datapoints from python to C
-    Point* datapoints = PyPointsLst_AsPointsArr(&datapoints_lst, n);
+    Point* datapoints = PyPointsLst_AsPointsArr(datapoints_lst, n);
     if (!datapoints)  {
         return NULL;
     }
@@ -35,7 +35,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     
     // free memory before exit
     free_memory(datapoints, n, clusters, centroids, k);
-    return python_clusters;
+    return python_centroids;
 }
 
 
