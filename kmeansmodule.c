@@ -13,6 +13,8 @@
 #define MAX_LINE_LENGTH 1000
 #define MAX_DOUBLE 1.7976931348623157E+308
 
+int dimension;
+
 typedef struct {
     double* coordinates;
     int dimension;
@@ -34,7 +36,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* clusters;
     int iter, k, n;
 
-    if (!PyArg_ParseTuple(args, "OOiii", &datapoints_lst, &centroids_lst, &iter, &k, &n)) {
+    if (!PyArg_ParseTuple(args, "OOiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
         return NULL;
     }
 
@@ -73,15 +75,14 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
 
     // after finishing this loop the points array should be initialized properly as C struct Point array
     int i;
-    int dimension = sizeof(points[0])
     for (i = 0; i < n; i++) {
         item = PyList_GetItem(points_lst, i);
-        PyPoint_AsPoint(item, points[i], dimension);
+        PyPoint_AsPoint(item, points[i]);
     }
     return points;
 }
 
-static void PyPoint_AsPoint(PyObject *item, Point *point, int dimension) {
+static void PyPoint_AsPoint(PyObject *item, Point *point) {
     PyObject *coordinates_lst;   
     PyObject *coordinate_item;
     double coordinate;
@@ -113,7 +114,6 @@ static void PyPoint_AsPoint(PyObject *item, Point *point, int dimension) {
 static void PyCentroids_FromClusters(Cluster* clusters, PyObject* python_centroids, int k) {
     PyObject* python_coordinate;
     double* cluster_coordinates;
-    int dimension = sizeof(clusters[0]);
 
     python_centroids = PyList_New(k);
     for (int i = 0; i < k; ++i) /* parse outer list */
