@@ -31,7 +31,7 @@ double distance_between_points(Point* p1, Point* p2);
 void assign_point_to_cluster(Point* point, Cluster* cluster);
 double update_centroid(Cluster* cluster);
 Cluster* find_nearest_cluster(Point* point, Cluster* clusters, int k);
-Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int iter);
+Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int iter);
 void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, int k);
 
 #endif // KMEANS_SHARED_H
