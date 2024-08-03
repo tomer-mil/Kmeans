@@ -31,7 +31,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     clusters = run_kmeans(centroids, datapoints, k, n, iter);
 
     // building python list containing the clusters' centroids
-    python_centroids = PyCentroids_FromClusters(&clusters, python_centroids, k);
+    python_centroids = PyCentroids_FromClusters(clusters, python_centroids, k);
     
     // free memory before exit
     free_memory(datapoints, n, clusters, centroids, k);
@@ -52,7 +52,9 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
     int i;
     for (i = 0; i < n; i++) {
         item = PyList_GetItem(points_lst, i);
-        PyPoint_AsPoint(item, &points[i]);
+        int r = PyPoint_AsPoint(item, &points[i]); 
+        if (r == 0)
+            return NULL // TODO: handle ret error 
     }
     return points;
 }
@@ -64,13 +66,13 @@ static int PyPoint_AsPoint(PyObject *item, Point *point) {
     
     // parsing a Point into coordinates list, dimension and Cluster 
     if (!PyArg_ParseTuple(item, "O", &coordinates_lst)) {
-        return NULL;
+        return 0;
     }
     
     double* coords = (double*) malloc(dimension * sizeof(double));
     if (coords == NULL) {
         printf("Memory allocation failed. Exiting.\n");
-        return NULL;
+        return 0;
     }
     
     // parsing the point's coordinates list into a C double array
@@ -83,6 +85,7 @@ static int PyPoint_AsPoint(PyObject *item, Point *point) {
 
     point->coordinates = coords;
     point->dimension = dimension;
+    return 1;
 }
 
 // parse centroids list in Python from clusters array in C
@@ -103,7 +106,7 @@ static PyObject* PyCentroids_FromClusters(Cluster* clusters, PyObject* python_ce
         PyList_SetItem(python_centroids, i, python_coordinates);
     }
     // now the python_centroids should be updated with the centroids
-    return python_centroids
+    return python_centroids;
 }
 
 static PyMethodDef kmeans_FunctionsTable[] = {
