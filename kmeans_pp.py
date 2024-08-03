@@ -141,8 +141,11 @@ class DFHandler:
 
 	def join_dfs(self):
 		joined_df = self.df1.join(self.df2, how='inner', on=self.ID_COL, sort=True)
-		joined_df.insert(loc=len(joined_df.columns), column=D_VALUE_COL_NAME, value=np.zeros(joined_df.shape[1]))
-		joined_df.insert(loc=len(joined_df.columns), column=IS_CENTROID_COL_NAME, value=np.zeros(joined_df.shape[1]))
+		# Adding D and isCentroid columns
+		joined_df[IS_CENTROID_COL_NAME] = False
+		joined_df[D_VALUE_COL_NAME] = 0.0
+
+		print(f"joined_df:\n{joined_df.head()}")
 		return joined_df
 
 
