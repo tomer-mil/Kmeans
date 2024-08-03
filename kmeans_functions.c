@@ -1,5 +1,7 @@
 #include "kmeans_shared.h"
 
+int dimension;
+
 void init_clusters(Cluster* clusters, Point* centroids, int k) {
     int i;
 
