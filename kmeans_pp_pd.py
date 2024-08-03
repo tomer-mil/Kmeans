@@ -239,9 +239,10 @@ class KmeansPPRunner:
 		return df.values.to_list()
 	
 	def print_output(self):
+		print(",".join(map(str, self.initialized_Kmeans.initialized_centroids_idx_arr)))
 		for i in range(self.initialized_Kmeans.k):
 			print(",".join([format(item, '.4f') for item in self.final_clusters[i]]))
-
+	
 	def runKmeansPP(self):
 		self.initialized_Kmeans.initialize_centroids()
 		self.final_clusters = mykmeanssp.run_kmeans(self.initialized_Kmeans.datapoints_df, self.initialized_Kmeans.clusters_df, self.initialized_Kmeans.iter, self.initialized_Kmeans.k, self.initialized_Kmeans.n, self.initialized_Kmeans.dimension)
