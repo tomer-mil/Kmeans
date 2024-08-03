@@ -2,6 +2,7 @@
 #include <Python.h>
 #include "kmeans_shared.h"
 
+int dimension;
 
 static int PyPoint_AsPoint(PyObject *item, Point *point) {
     PyObject *coordinates_lst;   
@@ -81,7 +82,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* centroids_lst;
     PyObject* python_centroids;
     Cluster* clusters = NULL;
-    int iter, k, n;
+    int iter, k, n, dimension;
 
     if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
         return NULL;
