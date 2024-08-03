@@ -1,5 +1,6 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <stdio.h>
 #include "kmeans_shared.h"
 
 int dimension;
@@ -82,11 +83,13 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* centroids_lst;
     PyObject* python_centroids;
     Cluster* clusters = NULL;
-    int iter, k, n, dimension;
+    int iter, k, n, d;
 
-    if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
+    if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &d)) {
         return NULL;
     }
+
+    dimension = d;
 
     // parse initialized clusters' centroids from python to C
     Point* centroids = PyPointsLst_AsPointsArr(centroids_lst, k);
@@ -117,7 +120,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
 static PyMethodDef kmeans_FunctionsTable[] = {
     {
         "run_kmeans", // name exposed to Python
-        fit, // C wrapper function
+        (PyCFunction) fit, // C wrapper function
         METH_VARARGS, // received variable args (but really just 1)
         "runs the kmeans algoritm as requested, except from centroids initialization" // documentation
     }, {
@@ -126,7 +129,7 @@ static PyMethodDef kmeans_FunctionsTable[] = {
 };
 
 // modules definition
-static struct PyModuleDef kmeans_Module = {
+static struct PyModuleDef kmeansmodule = {
     PyModuleDef_HEAD_INIT,
     "mykmeanssp",     // name of module exposed to Python
     "kmeans Python wrapper for kmeans C implementation.", // module documentation
@@ -135,5 +138,5 @@ static struct PyModuleDef kmeans_Module = {
 };
 
 PyMODINIT_FUNC PyInit_mykmeanssp(void) {
-    return PyModule_Create(&kmeans_Module);
+    return PyModule_Create(&kmeansmodule);
 }

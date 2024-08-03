@@ -303,12 +303,24 @@ class KmeansPPRunner:
 		print(f"\tn: {self.initialized_Kmeans.n}")
 		print(f"\tdimension: {self.initialized_Kmeans.dimension}")
 
-		self.final_clusters = mykmeanssp.run_kmeans(self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df),
-													self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df),
+		datapoints_df_list = self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df)
+		clusters_df_list = self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df)
+
+		# input_tuple = (datapoints_df_list,
+		# 			   clusters_df_list,
+		# 			   self.initialized_Kmeans.iter,
+		# 			   self.initialized_Kmeans.k,
+		# 			   self.initialized_Kmeans.n,
+		# 			   self.initialized_Kmeans.dimension)
+
+		self.final_clusters = mykmeanssp.run_kmeans(datapoints_df_list,
+													clusters_df_list,
 													self.initialized_Kmeans.iter,
 													self.initialized_Kmeans.k,
 													self.initialized_Kmeans.n,
 													self.initialized_Kmeans.dimension)
+		# print(f"input tuple:\n{input_tuple}")
+		# self.final_clusters = mykmeanssp.run_kmeans(input_tuple)
 		print(f"Finished running C code!")
 		self.print_output()
 
