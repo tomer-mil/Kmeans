@@ -119,7 +119,7 @@ static void PyCentroids_FromClusters(Cluster* clusters, PyObject* python_centroi
     for (int i = 0; i < k; ++i) /* parse outer list */
     {   
         PyObject* python_coordinates = PyList_New(dimension);
-        cluster_coordinates = clusters[i].centroid;
+        cluster_coordinates = clusters[i].centroid.coordinates;
         for (int j = 0; j < dimension; ++j) /* parse each centroids (inner lists) */
         {   
             python_coordinate = PyFloat_FromDouble(coordinates[j]);

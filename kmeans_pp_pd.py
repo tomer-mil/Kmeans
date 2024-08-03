@@ -157,6 +157,7 @@ class KmeansPPInitializer:
 	clusters_df: pd.DataFrame
 	n: int
 	k: int
+	dimension: int
 	iter: int
 	epsilon: float
 	initialized_centroids_idx_arr: list
@@ -173,6 +174,7 @@ class KmeansPPInitializer:
 		self.datapoints_df = self.handler.get_joined_df()
 		self.clusters_df = pd.DataFrame()
 		self.n = self.datapoints_df.size
+		self.dimension = self.datapoints_df.shape[1]
 		self.initialized_centroids_idx_arr = list()
 
 		np.random.seed(NP_RANDOM_SEED)
@@ -242,7 +244,7 @@ class KmeansPPRunner:
 
 	def runKmeansPP(self):
 		self.initialized_Kmeans.initialize_centroids()
-		self.final_clusters = mykmeanssp.run_kmeans(self.initialized_Kmeans.datapoints_df, self.initialized_Kmeans.clusters_df, self.initialized_Kmeans.iter, self.initialized_Kmeans.k, self.initialized_Kmeans.n)
+		self.final_clusters = mykmeanssp.run_kmeans(self.initialized_Kmeans.datapoints_df, self.initialized_Kmeans.clusters_df, self.initialized_Kmeans.iter, self.initialized_Kmeans.k, self.initialized_Kmeans.n, self.initialized_Kmeans.dimension)
 		self.print_output()
 
 
