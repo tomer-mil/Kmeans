@@ -1,19 +1,6 @@
-# define PY_SSIZE_T_CLEAN
-# include <Python.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "kmeans_functions.c"
-
-// maybe delete definitions, keep them in kmeans_functions.c
-#define iter 1000
-#define DEFAULT_ITER 200
-#define EPSILON 0.001
-#define MAX_LINE_LENGTH 1000
-#define MAX_DOUBLE 1.7976931348623157E+308
-
-int dimension;
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+#include "kmeans_shared.h"
 
 typedef struct {
     double* coordinates;

@@ -1,27 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#define MAX_ITER 1000
-#define DEFAULT_ITER 200
-#define EPSILON 0.001
-#define MAX_LINE_LENGTH 1000
-#define MAX_DOUBLE 1.7976931348623157E+308
-
-
-typedef struct {
-    double* coordinates;
-    int dimension;
-    struct Cluster* cluster;
-} Point;
-
-
-typedef struct Cluster {
-    Point centroid;
-    Point sum_of_points;
-    int number_of_points;
-    int is_smaller_than_epsilon;
-} Cluster;
+#include "kmeans_shared.h"
 
 
 void init_clusters(Cluster* clusters, Point* centroids, int k) {
