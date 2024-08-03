@@ -2,18 +2,6 @@
 #include <Python.h>
 #include "kmeans_shared.h"
 
-typedef struct {
-    double* coordinates;
-    int dimension;
-    struct Cluster* cluster;
-} Point;
-
-typedef struct Cluster {
-    Point centroid;
-    Point sum_of_points;
-    int number_of_points;
-    int is_smaller_than_epsilon;
-} Cluster;
 
 // args = [point[],centroids[], iter]
 static PyObject* fit(PyObject *self, PyObject *args) {

@@ -1,6 +1,5 @@
 #include "kmeans_shared.h"
 
-
 void init_clusters(Cluster* clusters, Point* centroids, int k) {
     int i, dimension;
     // the centroids are already initiated so we will retrieve the dimension from the first centroid
