@@ -99,8 +99,6 @@ Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_i
     Cluster* clusters;
     Cluster* nearest_cluster;
 
-    num_points = 0;
-    
     clusters = (Cluster*) malloc(k * sizeof(Cluster));
     if (!clusters) {
         printf("An Error Has Occured\n");
@@ -116,7 +114,7 @@ Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_i
     while (iteration < max_iter && done_clusters < k) {
         done_clusters = 0;
 
-        for (i = 0; i < num_points; i++) {
+        for (i = 0; i < n; i++) {
             nearest_cluster = find_nearest_cluster(&datapoints[i], clusters, k);
             assign_point_to_cluster(&datapoints[i], nearest_cluster);
         }
