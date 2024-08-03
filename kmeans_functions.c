@@ -31,7 +31,7 @@ void init_clusters(Cluster* clusters, Point* centroids, int k) {
 
     for (i = 0; i < k; i++) {
         clusters[i].centroid = centroids[i];
-        clusters[i].sum_of_points.coordinates = (double*) calloc(dimension * sizeof(double));
+        clusters[i].sum_of_points.coordinates = (double*) calloc(dimension, sizeof(double));
         if (!clusters[i].centroid.coordinates || clusters[i].sum_of_points.coordinates == NULL) {
             printf("An Error Has Occured\n");
             exit(1);
@@ -100,6 +100,26 @@ Cluster* find_nearest_cluster(Point* point, Cluster* clusters, int k) {
     return nearest_cluster;
 }
 
+
+void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, int k) {
+    int i;
+    for (i = 0; i < n; i++) {
+        free(datapoints[i].coordinates);
+    }
+    free(datapoints);
+
+    if (clusters) {
+        for (i = 0; i < k; i++) {
+            free(centroids[i].coordinates);
+            free(clusters[i].centroid.coordinates);
+            free(clusters[i].sum_of_points.coordinates);
+        }
+        free(clusters);
+        free(centroids);
+    }
+}
+
+
 Point* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
     int num_points, dimension;
     int iteration, done_clusters, i, j;
@@ -112,8 +132,8 @@ Point* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
     clusters = (Cluster*) malloc(k * sizeof(Cluster));
     if (!clusters) {
         printf("An Error Has Occured\n");
-        free_memory(datapoints, num_points, NULL, 0);
-        return 1;
+        free_memory(datapoints, num_points, clusters, centroids, 0);
+        return NULL; // TODO: check error handling (was 1)
     }
 
     init_clusters(clusters, centroids, k);
@@ -141,23 +161,3 @@ Point* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
 
     return clusters;
 }
-
-
-void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, int k) {
-    int i;
-    for (i = 0; i < n; i++) {
-        free(datapoints[i].coordinates);
-    }
-    free(datapoints);
-
-    if (clusters) {
-        for (i = 0; i < k; i++) {
-            free(centroids[i].coordinates);
-            free(clusters[i].centroid.coordinates);
-            free(clusters[i].sum_of_points.coordinates);
-        }
-        free(clusters);
-        free(centroids);
-    }
-}
-
