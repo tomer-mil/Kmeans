@@ -36,7 +36,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* clusters;
     int iter, k, n;
 
-    if (!PyArg_ParseTuple(args, "OOiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
+    if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
         return NULL;
     }
 
@@ -150,6 +150,6 @@ static struct PyModuleDef kmeans_Module = {
     kmeans_FunctionsTable
 };
 
-PyMODINIT_FUNC PyInit_kmeans(void) {
+PyMODINIT_FUNC PyInit_mykmeanssp(void) {
     return PyModule_Create(&kmeans_Module);
 }

@@ -208,7 +208,7 @@ class KmeansPPInitializer:
 	
 	# Calculates and sets the P value of non-cluster vectors per new cluster addition
 	def calc_P(self) -> np.array:
-		D_sum = self.datapoints_df[D_VALUE_COL_NAME].sum(axis=1)
+		D_sum = self.datapoints_df[D_VALUE_COL_NAME].sum()
 		# Calc P for entire column
 		return self.datapoints_df.loc[D_VALUE_COL_NAME] / D_sum
 	
