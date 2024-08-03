@@ -8,7 +8,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* datapoints_lst;
     PyObject* centroids_lst;
     PyObject* python_centroids;
-    Cluster* clusters;
+    Cluster* clusters = NULL;
     int iter, k, n;
 
     if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
@@ -28,10 +28,10 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     }
     
     // clusters is an array of Points representing the clusters
-    clusters = run_kmeans(centroids, datapoints, k, iter);
+    clusters = run_kmeans(centroids, datapoints, k, n, iter);
 
     // building python list containing the clusters' centroids
-    PyCentroids_FromClusters(&clusters, python_centroids, k);
+    python_centroids = PyCentroids_FromClusters(&clusters, python_centroids, k);
     
     // free memory before exit
     free_memory(datapoints, n, clusters, centroids, k);
@@ -52,12 +52,12 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
     int i;
     for (i = 0; i < n; i++) {
         item = PyList_GetItem(points_lst, i);
-        PyPoint_AsPoint(item, points[i]);
+        PyPoint_AsPoint(item, &points[i]);
     }
     return points;
 }
 
-static void PyPoint_AsPoint(PyObject *item, Point *point) {
+static int PyPoint_AsPoint(PyObject *item, Point *point) {
     PyObject *coordinates_lst;   
     PyObject *coordinate_item;
     double coordinate;
@@ -86,7 +86,7 @@ static void PyPoint_AsPoint(PyObject *item, Point *point) {
 }
 
 // parse centroids list in Python from clusters array in C
-static void PyCentroids_FromClusters(Cluster* clusters, PyObject* python_centroids, int k) {
+static PyObject* PyCentroids_FromClusters(Cluster* clusters, PyObject* python_centroids, int k) {
     PyObject* python_coordinate;
     double* cluster_coordinates;
 
@@ -97,12 +97,13 @@ static void PyCentroids_FromClusters(Cluster* clusters, PyObject* python_centroi
         cluster_coordinates = clusters[i].centroid.coordinates;
         for (int j = 0; j < dimension; ++j) /* parse each centroids (inner lists) */
         {   
-            python_coordinate = PyFloat_FromDouble(coordinates[j]);
+            python_coordinate = PyFloat_FromDouble(cluster_coordinates[j]);
             PyList_SetItem(python_coordinates, j, python_coordinate);
         }
         PyList_SetItem(python_centroids, i, python_coordinates);
     }
     // now the python_centroids should be updated with the centroids
+    return python_centroids
 }
 
 static PyMethodDef kmeans_FunctionsTable[] = {

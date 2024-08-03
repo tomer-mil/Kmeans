@@ -1,9 +1,7 @@
 #include "kmeans_shared.h"
 
 void init_clusters(Cluster* clusters, Point* centroids, int k) {
-    int i, dimension;
-    // the centroids are already initiated so we will retrieve the dimension from the first centroid
-    dimension = centroids[0].dimension;
+    int i;
 
     for (i = 0; i < k; i++) {
         clusters[i].centroid = centroids[i];
@@ -96,19 +94,17 @@ void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, 
 }
 
 
-Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
-    int num_points, dimension;
+Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_iter) {
     int iteration, done_clusters, i, j;
     Cluster* clusters;
     Cluster* nearest_cluster;
 
     num_points = 0;
-    dimension = 0;
     
     clusters = (Cluster*) malloc(k * sizeof(Cluster));
     if (!clusters) {
         printf("An Error Has Occured\n");
-        free_memory(datapoints, num_points, clusters, centroids, 0);
+        free_memory(datapoints, n, clusters, centroids, 0);
         return NULL; // TODO: check error handling (was 1)
     }
 
