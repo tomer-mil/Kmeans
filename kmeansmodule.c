@@ -46,9 +46,9 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
     int i;
     for (i = 0; i < n; i++) {
         item = PyList_GetItem(points_lst, i);
-        int r = PyPoint_AsPoint(item, &points[i]); 
-        if (r == 0)
-            return NULL // TODO: handle ret error 
+        int res = PyPoint_AsPoint(item, &points[i]); 
+        if (res == 0)
+            return NULL; // TODO: handle ret error 
     }
     return points;
 }
@@ -57,7 +57,6 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
 // parse centroids list in Python from clusters array in C
 static PyObject* PyCentroids_FromClusters(Cluster* clusters, int k) {
     PyObject* python_centroids;
-    PyObject* python_coordinates;
 
     python_centroids = PyList_New(k);
     for (int i = 0; i < k; ++i) /* parse outer list */
