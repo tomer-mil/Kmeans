@@ -8,7 +8,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* datapoints_lst;
     PyObject* centroids_lst;
     PyObject* python_centroids;
-    PyObject* clusters;
+    Cluster* clusters;
     int iter, k, n;
 
     if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &dimension)) {
