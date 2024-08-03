@@ -25,13 +25,13 @@ class ErrorMessages(Enum):
 
 # Example of a script call: `python3 kmeans_pp.py 3 100 0.01 input_1.txt input_2.txt`
 class Argument(IntEnum):
-	PYTHON_CALL = 0
-	PY_FILE = 1
-	K = 2
-	ITER = 3
-	EPSILON = 4
-	FILE1_URL = 5
-	FILE2_URL = 6
+	# PYTHON_CALL = 0
+	PY_FILE = 0
+	K = 1
+	ITER = 2
+	EPSILON = 3
+	FILE1_URL = 4
+	FILE2_URL = 5
 
 
 class CommandLineReader:
@@ -50,14 +50,15 @@ class CommandLineReader:
 		self.file2_url = str(cmd_input[Argument.FILE2_URL.value])
 
 	@staticmethod
-	# Checks whether the string `n` represents a natural number(0 excluded)
+	# Checks whether the string `n` represents a natural number (0 excluded)
 	def is_natural(n):
+		print(f"isDigit: {str(n).isdigit()}\nfloat(n) == int(n): {float(n) == int(n)}\nint(n) > 0: {int(n) > 0}")
 		return str(n).isdigit() and float(n) == int(n) and int(n) > 0
 
 	@classmethod
 	# Retrieves the file URL suffix (hence type)
 	def get_file_suffix(cls, file_url):
-		return file_url.split(".")[-4:-1]
+		return file_url[-4:]
 
 	@classmethod
 	# Validates that the passed URL is either a txt or csv file.
@@ -75,12 +76,14 @@ class CommandLineReader:
 		elif arg_type == Argument.FILE2_URL:
 			return cls.is_valid_file_url(url=arg_value)
 		elif arg_type == Argument.ITER:
-			cls.is_natural(arg_value) and 1 < int(arg_value) < MAX_ITER
+			return cls.is_natural(arg_value) and 1 < int(arg_value) < MAX_ITER
+		elif arg_type == Argument.PY_FILE:
+			return True
 		else:
 			return False
 
 	@classmethod
-	def print_invalid_arg_error(cls, arg_type):
+	def print_invalid_arg_error(cls, arg_type: Argument.K):
 		if arg_type == Argument.K:
 			print(ErrorMessages.INVALID_K_ERROR_MSG.value)
 		elif arg_type == Argument.EPSILON:
@@ -92,7 +95,7 @@ class CommandLineReader:
 		elif arg_type == Argument.ITER:
 			print(ErrorMessages.INVALID_ITER_ERROR_MSG.value)
 		else:
-			print(ErrorMessages.GENERAL_ERROR_MSG.value)
+			print(ErrorMessages.GENERAL_ERROR_MSG.value + "\n" + f"{arg_type.value}")
 
 	@classmethod
 	# Validates to correctness of the passed cmd command and returns errors as requested in the assignment
@@ -104,6 +107,7 @@ class CommandLineReader:
 
 		for arg in Argument:
 			if not cls.is_valid_arg(arg_type=arg, arg_value=arguments_list[arg]):
+				print(arg.name)
 				cls.print_invalid_arg_error(arg_type=arg)
 
 				sys.exit(1)
@@ -136,7 +140,7 @@ class DFHandler:
 		self.df2.set_index(keys=self.ID_COL, inplace=True)
 
 	def join_dfs(self):
-		joined_df = self.df1.join(self.df2, how='inner', on=str(self.ID_COL), sort=True)
+		joined_df = self.df1.join(self.df2, how='inner', on=self.ID_COL, sort=True)
 		joined_df.insert(loc=len(joined_df.columns), column=D_VALUE_COL_NAME, value=np.zeros(joined_df.shape[1]))
 		joined_df.insert(loc=len(joined_df.columns), column=IS_CENTROID_COL_NAME, value=np.zeros(joined_df.shape[1]))
 		return joined_df
@@ -240,6 +244,7 @@ class KmeansPPRunner:
 
 
 if __name__ == '__main__':
+	print(f"command line arguments passed: {sys.argv}")
 	initialized_kmeans = KmeansPPInitializer()
 	runner = KmeansPPRunner(initialized_Kmeans=initialized_kmeans)
 	runner.runKmeansPP()
