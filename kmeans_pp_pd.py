@@ -3,6 +3,7 @@ import sys
 from enum import IntEnum, StrEnum
 import pandas as pd
 import numpy as np
+import mykmeanssp
 
 MAX_ITER = 1000
 DEFAULT_ITER = 200
@@ -10,7 +11,7 @@ EPSILON = 0.001
 
 NP_RANDOM_SEED = 1234
 
-IS_CENTROID_COL_NAME = 'wasSelectedAsCentroid'
+IS_CENTROID_COL_NAME = 'isCentroid'
 D_VALUE_COL_NAME = 'D'
 
 
@@ -159,6 +160,7 @@ class KmeansPPInitializer:
 	k: int
 	iter: int
 	epsilon: float
+	initialized_centroids_idx_arr: list
 
 	def __init__(self):
 		self.reader = CommandLineReader(cmd_input=sys.argv)
@@ -172,6 +174,7 @@ class KmeansPPInitializer:
 		self.datapoints_df = self.handler.get_joined_df()
 		self.clusters_df = pd.DataFrame()
 		self.n = self.datapoints_df.size
+		self.initialized_centroids_idx_arr = list()
 
 		np.random.seed(NP_RANDOM_SEED)
 
@@ -191,7 +194,7 @@ class KmeansPPInitializer:
 	def add_new_random_centroid(self) -> None:
 		new_centroid_index = self.get_random_index()
 		self.datapoints_df.iloc[new_centroid_index, [IS_CENTROID_COL_NAME]] = 1
-		self.clusters_df = pd.concat(objs=[self.clusters_df, self.datapoints_df.loc[new_centroid_index]], ignore_index=True, axis=0)
+		self.clusters_df = pd.concat(objs=[self.clusters_df, self.datapoints_df.iloc[new_centroid_index]], ignore_index=True, axis=0)
 
 	# Calculates and sets the new D values of all non-cluster vectors
 	def calc_d(self):
@@ -204,3 +207,41 @@ class KmeansPPInitializer:
 	def calc_P(self) -> np.array:
 		D_sum = self.datapoints_df[D_VALUE_COL_NAME].sum(axis=1)
 		return self.datapoints_df.loc[D_VALUE_COL_NAME] / D_sum
+	
+	# relevant for output
+	def set_initialized_centroids_idx_arr(self):
+		self.initialized_centroids_idx_arr = self.datapoints_df.index[self.datapoints_df[IS_CENTROID_COL_NAME] == 1].tolist()
+
+	def initialize_centroids(self):
+		for i in range(self.k):
+			self.add_new_random_centroid()
+		
+		self.set_initialized_centroids_idx_arr()
+		# clean the datapoints dataframe after initialization
+		self.datapoints_df.drop([IS_CENTROID_COL_NAME, D_VALUE_COL_NAME], axis=1, inplace=True)
+
+		# now both the datapoints_df and clusters_df contains coordinates only for each point. 
+	
+
+class KmeansPPRunner:
+	initialized_Kmeans: KmeansPPInitializer
+	final_clusters: list[list]
+
+	def __init__(self, initialized_Kmeans: KmeansPPInitializer):
+		initialized_Kmeans = KmeansPPInitializer()
+
+	@staticmethod
+	def df_to_list_of_lists(df):
+		return df.values.to_list()
+	
+	def print_output(self):
+		for i in range(self.initialized_Kmeans.k):
+			print(",".join([format(item, '.4f') for item in self.final_clusters[i]]))
+
+	def runKmeansPP(self):
+		self.initialized_Kmeans.initialize_centroids()
+		final_clusters = mykmeanssp.fit(self.initialized_Kmeans.datapoints_df, self.initialized_Kmeans.clusters_df, self.initialized_Kmeans.iter, self.initialized_Kmeans.k, self.initialized_Kmeans.n)
+
+
+
+

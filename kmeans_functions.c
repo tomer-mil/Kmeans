@@ -139,13 +139,13 @@ Point* run_kmeans(Point* centroids, Point* datapoints, int k, int max_iter) {
         iteration++;
     }
 
-    return centroids;
+    return clusters;
 }
 
 
-void free_memory(Point* datapoints, int num_points, Cluster* clusters, Point* centroids, int k) {
+void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, int k) {
     int i;
-    for (i = 0; i < num_points; i++) {
+    for (i = 0; i < n; i++) {
         free(datapoints[i].coordinates);
     }
     free(datapoints);

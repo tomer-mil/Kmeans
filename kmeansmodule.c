@@ -6,7 +6,8 @@
 #include <math.h>
 #include "kmeans_functions.c"
 
-#define MAX_ITER 1000
+// maybe delete definitions, keep them in kmeans_functions.c
+#define iter 1000
 #define DEFAULT_ITER 200
 #define EPSILON 0.001
 #define MAX_LINE_LENGTH 1000
@@ -25,53 +26,44 @@ typedef struct Cluster {
     int is_smaller_than_epsilon;
 } Cluster;
 
-// args = [point[],centroids[], max_iter]
+// args = [point[],centroids[], iter]
 static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* datapoints_lst;
     PyObject* centroids_lst;
     PyObject* python_centroids;
-    int max_iter;
-    // TODO: get max_iter and other attr
-    if (!PyArg_ParseTuple(args, "OOi", &datapoints_lst, &centroids_lst, &max_iter)) {
+    PyObject* clusters;
+    int iter, k, n;
+
+    if (!PyArg_ParseTuple(args, "OOiii", &datapoints_lst, &centroids_lst, &iter, &k, &n)) {
         return NULL;
     }
 
-    int k = PyObject_Length(centroids_lst);
-    if (k < 0) {
-        return NULL;
-    }
-
-    Point* centroids = PyPointsLst_AsPointsArr(&centroids_lst);
+    // parse initialized clusters' centroids from python to C
+    Point* centroids = PyPointsLst_AsPointsArr(&centroids_lst, k);
     if (!centroids)  {
         return NULL;
     }
 
-    Point* datapoints = PyPointsLst_AsPointsArr(&datapoints_lst);
+    // parse datapoints from python to C
+    Point* datapoints = PyPointsLst_AsPointsArr(&datapoints_lst, n);
     if (!datapoints)  {
         return NULL;
     }
     
-    centroids = run_kmeans(centroids, datapoints, k, max_iter);
+    // clusters is an array of Points representing the clusters
+    clusters = run_kmeans(centroids, datapoints, k, iter);
 
-    python_centroids = PyList_New(k);
-    for (int i = 0; i < k; ++i)
-    {
-        python_obj = Py_BuildValue("O", centroids[i]);
-        PyList_SetItem(python_centroids, i, python_obj);
-    }
-
-    free_memory(datapoints, num_points, clusters, centroids, k);
-    return python_centroids;
+    // building python list containing the clusters' centroids
+    PyCentroids_FromClusters(&clusters, python_centroids, k);
+    
+    // free memory before exit
+    free_memory(datapoints, n, clusters, centroids, k);
+    return python_clusters;
 }
 
 
-static Point* PyPointsLst_AsPointsArr(PyObject *points_lst) {
+static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
     PyObject *item;
-    
-    int n = PyObject_Length(points_lst);
-    if (n < 0) {
-        return NULL;
-    }
 
     Point* points = (Point *)malloc(n * sizeof(Point));
     if (points == NULL) {
@@ -79,24 +71,23 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst) {
         return NULL;
     }
 
-    // after finishing this loop the points array should be initiated properly
+    // after finishing this loop the points array should be initialized properly as C struct Point array
     int i;
+    int dimension = sizeof(points[0])
     for (i = 0; i < n; i++) {
         item = PyList_GetItem(points_lst, i);
-        PyPoint_AsPoint(item, points[i]);
+        PyPoint_AsPoint(item, points[i], dimension);
     }
     return points;
 }
 
-static void PyPoint_AsPoint(PyObject *item, Point *point) {
+static void PyPoint_AsPoint(PyObject *item, Point *point, int dimension) {
     PyObject *coordinates_lst;   
-    PyObject *cluster;
     PyObject *coordinate_item;
-    int dimension;
     double coordinate;
     
     // parsing a Point into coordinates list, dimension and Cluster 
-    if (!PyArg_ParseTuple(item, "OiO", &coordinates_lst, &dimension, &cluster)) {
+    if (!PyArg_ParseTuple(item, "O", &coordinates_lst)) {
         return NULL;
     }
     
@@ -116,30 +107,27 @@ static void PyPoint_AsPoint(PyObject *item, Point *point) {
 
     point->coordinates = coords;
     point->dimension = dimension;
-    // TODO: point.cluster
 }
 
-static PyObject* GetList(PyObject* self, PyObject* args)
-{
-    int N,r;
-    PyObject* python_val;
-    PyObject* python_int;
-    if (!PyArg_ParseTuple(args, "i", &N)) {
-        return NULL;
-    }
-    if (N < 3) {
-        PyErr_SetString(PyExc_ValueError, "List length must be greater than 3");
-        return NULL;
-    }
+// parse centroids list in Python from clusters array in C
+static void PyCentroids_FromClusters(Cluster* clusters, PyObject* python_centroids, int k) {
+    PyObject* python_coordinate;
+    double* cluster_coordinates;
+    int dimension = sizeof(clusters[0]);
 
-    python_val = PyList_New(N);
-    for (int i = 0; i < N; ++i)
-    {
-        r = i;
-        python_int = Py_BuildValue("i", r);
-        PyList_SetItem(python_val, i, python_int);
+    python_centroids = PyList_New(k);
+    for (int i = 0; i < k; ++i) /* parse outer list */
+    {   
+        PyObject* python_coordinates = PyList_New(dimension);
+        cluster_coordinates = clusters[i].centroid;
+        for (int j = 0; j < dimension; ++j) /* parse each centroids (inner lists) */
+        {   
+            python_coordinate = PyFloat_FromDouble(coordinates[j]);
+            PyList_SetItem(python_coordinates, j, python_coordinate);
+        }
+        PyList_SetItem(python_centroids, i, python_coordinates);
     }
-    return python_val;
+    // now the python_centroids should be updated with the centroids
 }
 
 static PyMethodDef kmeans_FunctionsTable[] = {
