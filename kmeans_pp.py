@@ -57,7 +57,7 @@ class CommandLineReader:
 	@classmethod
 	# Retrieves the file URL suffix (hence type)
 	def get_file_suffix(cls, file_url):
-		return file_url.split(".")[-1]
+		return file_url.split(".")[-4:-1]
 
 	@classmethod
 	# Validates that the passed URL is either a txt or csv file.
@@ -99,12 +99,13 @@ class CommandLineReader:
 	def validate_cmd_arguments(cls, arguments_list):
 		# Assert number of arguments passed
 		if len(arguments_list) != 6:
-			print(ErrorMessages.GENERAL_ERROR_MSG)
+			print(ErrorMessages.GENERAL_ERROR_MSG + " fail validate_cmd_arguments")
 			sys.exit(1)
 
 		for arg in Argument:
 			if not cls.is_valid_arg(arg_type=arg, arg_value=arguments_list[arg]):
 				cls.print_invalid_arg_error(arg_type=arg)
+
 				sys.exit(1)
 
 
