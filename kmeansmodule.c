@@ -79,16 +79,17 @@ static PyObject* PyCentroids_FromClusters(Cluster* clusters, int k) {
 
 // args = [point[],centroids[], iter]
 static PyObject* fit(PyObject *self, PyObject *args) {
+    printf("HI@!");
     PyObject* datapoints_lst;
     PyObject* centroids_lst;
     PyObject* python_centroids;
     Cluster* clusters = NULL;
     int iter, k, n, d;
 
-    if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &d)) {
+    if (!PyArg_ParseTuple(*args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &d)) {
         return NULL;
     }
-
+    printf("HI!");
     dimension = d;
 
     // parse initialized clusters' centroids from python to C
@@ -117,9 +118,9 @@ static PyObject* fit(PyObject *self, PyObject *args) {
 
 
 
-static PyMethodDef kmeans_FunctionsTable[] = {
+static PyMethodDef kmeans_FunctionsTable [] = {
     {
-        "run_kmeans", // name exposed to Python
+        "python_fit", // name exposed to Python
         (PyCFunction) fit, // C wrapper function
         METH_VARARGS, // received variable args (but really just 1)
         "runs the kmeans algoritm as requested, except from centroids initialization" // documentation

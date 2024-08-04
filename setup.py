@@ -2,8 +2,8 @@ from setuptools import Extension, setup
 
 module = Extension("mykmeanssp",
                   sources=[
-                    'kmeans_functions.c',
-                    'kmeansmodule.c'
+                    'kmeansmodule.c',
+                    'kmeans_functions.c'
                   ])
 setup(name='mykmeanssp',
      version='1.0',

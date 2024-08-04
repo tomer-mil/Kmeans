@@ -313,7 +313,7 @@ class KmeansPPRunner:
 		# 			   self.initialized_Kmeans.n,
 		# 			   self.initialized_Kmeans.dimension)
 
-		self.final_clusters = mykmeanssp.run_kmeans(datapoints_df_list,
+		my_final_clusters = mykmeanssp.python_fit(datapoints_df_list,
 													clusters_df_list,
 													self.initialized_Kmeans.iter,
 													self.initialized_Kmeans.k,
@@ -322,6 +322,7 @@ class KmeansPPRunner:
 		# print(f"input tuple:\n{input_tuple}")
 		# self.final_clusters = mykmeanssp.run_kmeans(input_tuple)
 		print(f"Finished running C code!")
+		self.final_clusters = my_final_clusters
 		self.print_output()
 
 	# except Exception as e:
