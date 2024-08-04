@@ -37,8 +37,8 @@ class CommandLineReader:
 	def __init__(self, cmd_input):
 		if len(cmd_input) == 5:
 			# Assuming no `iter` provided, adding default iteration value
-			cmd_input = cmd_input[Argument.PYTHON_CALL.value:Argument.K.value] + [DEFAULT_ITER] + cmd_input[
-																								  Argument.K.value:]
+			cmd_input = cmd_input[Argument.PY_FILE.value:Argument.ITER.value] + [DEFAULT_ITER] + cmd_input[
+																								  Argument.ITER.value:]
 
 		self.validate_cmd_arguments(arguments_list=cmd_input)
 
@@ -52,6 +52,14 @@ class CommandLineReader:
 	# Checks whether the string `n` represents a natural number (0 excluded)
 	def is_natural(n):
 		return str(n).isdigit() and float(n) == int(n) and int(n) > 0
+
+
+	@staticmethod
+	# Checks whether the string `n` represents a float number
+	def is_valid_float(n):
+		tmp = n.replace('.', '', 1)
+		return tmp.isdigit() and float(tmp) == int(tmp)
+		
 
 	@classmethod
 	# Retrieves the file URL suffix (hence type)
@@ -68,7 +76,7 @@ class CommandLineReader:
 		if arg_type == Argument.K:
 			return cls.is_natural(arg_value)
 		elif arg_type == Argument.EPSILON:
-			return arg_value.isnumeric() and int(arg_value) >= 0
+			return cls.is_valid_float(arg_value) and float(arg_value) >= 0
 		elif arg_type == Argument.FILE1_URL:
 			return cls.is_valid_file_url(url=arg_value)
 		elif arg_type == Argument.FILE2_URL:
@@ -105,6 +113,7 @@ class CommandLineReader:
 
 		for arg in Argument:
 			if not cls.is_valid_arg(arg_type=arg, arg_value=arguments_list[arg]):
+				print(arguments_list[arg])
 				print(arg.name)
 				cls.print_invalid_arg_error(arg_type=arg)
 
@@ -207,11 +216,13 @@ class KmeansPPInitializer:
 	def add_new_random_centroid(self):
 		# Generate random index
 		new_centroid_index = self.get_random_index()
+		self.initialized_centroids_idx_arr.append(new_centroid_index)
+
 		print(f"new_centroid_index: {new_centroid_index}")
 
 		self.datapoints_df.iloc[new_centroid_index, self.handler.is_centroid_index] = 1
 
-		print(f"datapoints_df:\n{self.datapoints_df}")
+		# print(f"datapoints_df:\n{self.datapoints_df}")
 
 		new_cluster = self.datapoints_df.iloc[[new_centroid_index]]
 		new_cluster = pd.DataFrame(new_cluster).iloc[:, :-2]
@@ -226,18 +237,18 @@ class KmeansPPInitializer:
 
 		non_centroid_points = self.datapoints_df.loc[self.datapoints_df[IS_CENTROID_COL_NAME] == 0, self.datapoints_df.columns[:-2]]
 
-		print(f"clusters df:\n {self.clusters_df}")
+		# print(f"clusters df:\n {self.clusters_df}")
 		latest_cluster_added = self.clusters_df.tail(1)
 
-		print(f"non-centroid points:\n{non_centroid_points}")
+		# print(f"non-centroid points:\n{non_centroid_points}")
 		print(f"latest cluster added:\n{latest_cluster_added}")
 
 		distances = self.euclidian_distance(point1=non_centroid_points, point2=latest_cluster_added)
 
-		print(f"euclidian distance:\n{distances}")
+		# print(f"euclidian distance:\n{distances}")
 
 		non_centroid_points_D_col = self.datapoints_df.loc[self.datapoints_df[IS_CENTROID_COL_NAME] == 0, D_VALUE_COL_NAME]
-		print(f"non-centroid points D_col:\n{non_centroid_points_D_col}")
+		# print(f"non-centroid points D_col:\n{non_centroid_points_D_col}")
 
 		if self.clusters_df.shape[0] > 1:
 			self.datapoints_df.loc[(self.datapoints_df[IS_CENTROID_COL_NAME] == 0), [D_VALUE_COL_NAME]] = np.minimum(non_centroid_points_D_col, distances)
@@ -254,17 +265,9 @@ class KmeansPPInitializer:
 		# Calc P for entire column
 		return self.datapoints_df[D_VALUE_COL_NAME] / D_sum
 
-	# relevant for output
-	def set_initialized_centroids_idx_arr(self):
-		self.initialized_centroids_idx_arr = self.datapoints_df.index[self.datapoints_df[IS_CENTROID_COL_NAME] == 1].tolist()
-
 	def initialize_centroids(self):
 		for i in range(self.k):
 			self.add_new_random_centroid()
-
-		print("Finished initializing centroids")
-		self.set_initialized_centroids_idx_arr()
-		print("Finished initializing centroids idx array")
 
 		# clean the datapoints dataframe after initialization
 		self.datapoints_df.drop([IS_CENTROID_COL_NAME, D_VALUE_COL_NAME], axis=1, inplace=True)
@@ -297,8 +300,8 @@ class KmeansPPRunner:
 		print(f"Going into C code...")
 
 		print(f"C Arguments:")
-		print(f"\tdatapoints_df: {self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df.head(1))}\n\t\ttype: {type(self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df))}")
-		print(f"\tclusters_df: {self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df)}\n\t\ttype: {type(self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df))}")
+		# print(f"\tdatapoints_df: {self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df.head(1))}\n\t\ttype: {type(self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df))}")
+		# print(f"\tclusters_df: {self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df)}\n\t\ttype: {type(self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df))}")
 		print(f"\titer: {self.initialized_Kmeans.iter}")
 		print(f"\tn: {self.initialized_Kmeans.n}")
 		print(f"\tdimension: {self.initialized_Kmeans.dimension}")
@@ -306,21 +309,12 @@ class KmeansPPRunner:
 		datapoints_df_list = self.df_to_list_of_lists(df=self.initialized_Kmeans.datapoints_df)
 		clusters_df_list = self.df_to_list_of_lists(df=self.initialized_Kmeans.clusters_df)
 
-		# input_tuple = (datapoints_df_list,
-		# 			   clusters_df_list,
-		# 			   self.initialized_Kmeans.iter,
-		# 			   self.initialized_Kmeans.k,
-		# 			   self.initialized_Kmeans.n,
-		# 			   self.initialized_Kmeans.dimension)
-
 		my_final_clusters = mykmeanssp.python_fit(datapoints_df_list,
 													clusters_df_list,
 													self.initialized_Kmeans.iter,
 													self.initialized_Kmeans.k,
 													self.initialized_Kmeans.n,
 													self.initialized_Kmeans.dimension)
-		# print(f"input tuple:\n{input_tuple}")
-		# self.final_clusters = mykmeanssp.run_kmeans(input_tuple)
 		print(f"Finished running C code!")
 		self.final_clusters = my_final_clusters
 		self.print_output()

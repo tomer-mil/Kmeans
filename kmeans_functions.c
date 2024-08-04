@@ -19,7 +19,7 @@ void init_clusters(Cluster* clusters, Point* centroids, int k) {
 double distance_between_points(Point* p1, Point* p2) {
     double sum = 0.0;
     int i;
-    for (i = 0; i < p1->dimension; i++) {
+    for (i = 0; i < dimension; i++) {
         double diff = p1->coordinates[i] - p2->coordinates[i];
         sum += diff * diff;
     }
@@ -28,16 +28,42 @@ double distance_between_points(Point* p1, Point* p2) {
 
 void assign_point_to_cluster(Point* point, Cluster* cluster) {
     int i;
+
+    printf("Entering assign_point_to_cluster\n");
+    printf("Point dimension: %d, Cluster sum_of_points dimension: %d\n", point->dimension, cluster->sum_of_points.dimension);
+    printf("Point address: %p, Cluster address: %p\n", (void*)point, (void*)cluster);
+
+    if (!point || !cluster) {
+        printf("Error: Null point or cluster\n");
+        return;
+    }
+
+    printf("Point dimension: %d, Cluster sum_of_points dimension: %d\n", 
+           point->dimension, cluster->sum_of_points.dimension);
+
+
     if (point->cluster) {
+
+        printf("Point already assigned to cluster: %p\n", (void*)point->cluster);
+        printf("Reducing number of points in old cluster from %d\n", point->cluster->number_of_points);
+
         point->cluster->number_of_points--;
-        for (i = 0; i < point->dimension; i++) {
+
+        printf("Updating sum_of_points in old cluster\n");
+
+        for (i = 0; i < dimension; i++) {
+            printf("enterloop\n");
+            printf("coordinate %d in cluster->sum_of_points: %f -= %f\n", i, point->cluster->sum_of_points.coordinates[i], point->coordinates[i]);
+
             point->cluster->sum_of_points.coordinates[i] -= point->coordinates[i];
         }
     }
+    
+    printf("LOOP\n");
 
     point->cluster = cluster;
     cluster->number_of_points++;
-    for (i = 0; i < point->dimension; i++) {
+    for (i = 0; i < dimension; i++) {
         cluster->sum_of_points.coordinates[i] += point->coordinates[i];
     }
 }
@@ -64,7 +90,9 @@ Cluster* find_nearest_cluster(Point* point, Cluster* clusters, int k) {
     int i;
 
     for (i = 0; i < k; i++) {
+        
         double distance = distance_between_points(point, &clusters[i].centroid);
+        printf("finished distance_between_points\n");
         if (distance < min_distance) {
             min_distance = distance;
             nearest_cluster = &clusters[i];
@@ -82,14 +110,21 @@ void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, 
     }
     free(datapoints);
 
+    printf("freed datapoints!\n");
+
     if (clusters) {
         for (i = 0; i < k; i++) {
-            free(centroids[i].coordinates);
-            free(clusters[i].centroid.coordinates);
-            free(clusters[i].sum_of_points.coordinates);
+            
+            if (centroids && centroids[i].coordinates) free(centroids[i].coordinates);
+            printf("freed centroids[i].coordinates\n");
+            
+            if (clusters[i].sum_of_points.coordinates) free(clusters[i].sum_of_points.coordinates);
+            printf("freed clusters[i].sum_of_points.coordinates\n");
         }
-        free(clusters);
-        free(centroids);
+        if (clusters) free(clusters);
+        printf("freed clusters!\n");
+        if (centroids) free(centroids);
+        printf("freed centroids!\n");
     }
 }
 
@@ -120,10 +155,13 @@ Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_i
 
         for (i = 0; i < n; i++) {
             nearest_cluster = find_nearest_cluster(&datapoints[i], clusters, k);
+            printf("entering assign_point_to_cluster\n");
+            
             assign_point_to_cluster(&datapoints[i], nearest_cluster);
+            printf("finished assign_point_to_cluster\n");
         }
 
-        printf("Finished nearest_cluster for loop");
+        printf("Finished nearest_cluster for loop\n");
 
         for (i = 0; i < k; i++) {
             double centroid_diff = update_centroid(&clusters[i]);

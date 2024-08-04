@@ -24,7 +24,10 @@ static int PyPoint_AsPoint(PyObject *item, Point *point) {
     }
 
     point->coordinates = coords;
+    printf("setting point dimension to...... %d\n", dimension);
     point->dimension = dimension;
+    printf("assigned point dimension to...... %d\n", point->dimension);
+    point->cluster = NULL;
     return 1;
 }
 
@@ -107,6 +110,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
     // building python list containing the clusters' centroids
     python_centroids = PyCentroids_FromClusters(clusters, k);
     
+    printf("Passed PyCentroids_FromClusters in fit function\n");
     // free memory before exit
     free_memory(datapoints, n, clusters, centroids, k);
     return python_centroids;
