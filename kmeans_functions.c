@@ -70,7 +70,7 @@ Cluster* find_nearest_cluster(Point* point, Cluster* clusters, int k) {
             nearest_cluster = &clusters[i];
         }
     }
-
+    printf("Successfully found nearest cluster for point with header: %f", *point->coordinates);
     return nearest_cluster;
 }
 
@@ -95,29 +95,26 @@ void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, 
 
 
 Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_iter) {
-    
-    printf("########## Entered kmeans_functions.c ##########");
+    printf("Entering run_kmeans: k=%d, n=%d, max_iter=%d\n", k, n, max_iter);
     
     int iteration, done_clusters, i;
     Cluster* clusters;
     Cluster* nearest_cluster;
 
     clusters = (Cluster*) malloc(k * sizeof(Cluster));
+
     if (!clusters) {
         printf("An Error Has Occured\n");
         free_memory(datapoints, n, clusters, centroids, 0);
         return NULL; // TODO: check error handling (was 1)
     }
-    
-    printf("kmeans_functions: Entering init_clusters");
 
     init_clusters(clusters, centroids, k);
-
-    printf("kmeans_functions: Finished init_clusters");
 
     iteration = 0;
     done_clusters = 0;
 
+    printf("Entering while loop\n");
     while (iteration < max_iter && done_clusters < k) {
         done_clusters = 0;
 
@@ -125,6 +122,8 @@ Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_i
             nearest_cluster = find_nearest_cluster(&datapoints[i], clusters, k);
             assign_point_to_cluster(&datapoints[i], nearest_cluster);
         }
+
+        printf("Finished nearest_cluster for loop");
 
         for (i = 0; i < k; i++) {
             double centroid_diff = update_centroid(&clusters[i]);
