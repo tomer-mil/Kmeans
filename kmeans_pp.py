@@ -172,7 +172,7 @@ class KmeansPPInitializer:
 
 		self.datapoints_df = self.handler.get_joined_df()
 		self.clusters_df = pd.DataFrame()
-		self.n = self.datapoints_df.size
+		self.n = self.datapoints_df.shape[0]
 		self.dimension = self.datapoints_df.shape[1] - 2
 		self.initialized_centroids_idx_arr = list()
 

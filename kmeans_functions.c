@@ -95,6 +95,9 @@ void free_memory(Point* datapoints, int n, Cluster* clusters, Point* centroids, 
 
 
 Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_iter) {
+    
+    printf("########## Entered kmeans_functions.c ##########");
+    
     int iteration, done_clusters, i;
     Cluster* clusters;
     Cluster* nearest_cluster;
@@ -105,8 +108,12 @@ Cluster* run_kmeans(Point* centroids, Point* datapoints, int k, int n, int max_i
         free_memory(datapoints, n, clusters, centroids, 0);
         return NULL; // TODO: check error handling (was 1)
     }
+    
+    printf("kmeans_functions: Entering init_clusters");
 
     init_clusters(clusters, centroids, k);
+
+    printf("kmeans_functions: Finished init_clusters");
 
     iteration = 0;
     done_clusters = 0;

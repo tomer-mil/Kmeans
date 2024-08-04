@@ -6,14 +6,8 @@
 int dimension;
 
 static int PyPoint_AsPoint(PyObject *item, Point *point) {
-    PyObject *coordinates_lst;   
-    PyObject *coordinate_item;
+    PyObject* coordinate_item;
     double coordinate;
-    
-    // parsing a Point into coordinates list, dimension and Cluster 
-    if (!PyArg_ParseTuple(item, "O", &coordinates_lst)) {
-        return 0;
-    }
     
     double* coords = (double*) malloc(dimension * sizeof(double));
     if (coords == NULL) {
@@ -22,11 +16,11 @@ static int PyPoint_AsPoint(PyObject *item, Point *point) {
     }
     
     // parsing the point's coordinates list into a C double array
-    int i;
+    Py_ssize_t i;
     for (i = 0; i < dimension; i++) {
-        coordinate_item = PyList_GetItem(coordinates_lst, i);
+        coordinate_item = PyList_GetItem(item, i);
         coordinate = PyFloat_AsDouble(coordinate_item);
-        coords[i] = coordinate;
+        coords[(int) i] = coordinate;
     }
 
     point->coordinates = coords;
@@ -36,6 +30,9 @@ static int PyPoint_AsPoint(PyObject *item, Point *point) {
 
 
 static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
+
+    printf("Entered AsPointsArr\n");
+
     PyObject *item;
 
     Point* points = (Point *)malloc(n * sizeof(Point));
@@ -44,14 +41,30 @@ static Point* PyPointsLst_AsPointsArr(PyObject *points_lst, int n) {
         return NULL;
     }
 
+    printf("Allocated memory for Point\n");
+
     // after finishing this loop the points array should be initialized properly as C struct Point array
-    int i;
+    Py_ssize_t i;
     for (i = 0; i < n; i++) {
+        printf("\ti: %lu\n", i);
+        printf("Entered loop\n");
         item = PyList_GetItem(points_lst, i);
+
+        // For debugging purpuses
+        PyObject* repr = PyObject_Repr(item);
+        PyObject* str = PyUnicode_AsEncodedString(repr, "utf-8", "~E~");
+        const char *item_string = PyBytes_AS_STRING(str);
+        printf("Successfully assigned `item` variable: item == %s\n", item_string);
+        Py_XDECREF(repr);
+        Py_XDECREF(str);
+        //
+
         int res = PyPoint_AsPoint(item, &points[i]); 
+        printf("Successfully assigned `res` variable: res == %u\n", res);
         if (res == 0)
             return NULL; // TODO: handle ret error 
     }
+    printf("Exiting AsPointArr\n");
     return points;
 }
 
@@ -79,33 +92,40 @@ static PyObject* PyCentroids_FromClusters(Cluster* clusters, int k) {
 
 // args = [point[],centroids[], iter]
 static PyObject* fit(PyObject *self, PyObject *args) {
-    printf("HI@!");
     PyObject* datapoints_lst;
     PyObject* centroids_lst;
     PyObject* python_centroids;
-    Cluster* clusters = NULL;
-    int iter, k, n, d;
+    Cluster* clusters;
+    unsigned long iter;
+    int k, n, d;
 
-    if (!PyArg_ParseTuple(*args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &d)) {
+    if (!PyArg_ParseTuple(args, "OOiiii", &datapoints_lst, &centroids_lst, &iter, &k, &n, &d)) {
         return NULL;
     }
-    printf("HI!");
+    printf("iter: %li\n", iter);
+    printf("Passed ParseTuple in fit function\n");
     dimension = d;
-
+    printf("Entering AsPointsArr for centroids in fit function\n");
     // parse initialized clusters' centroids from python to C
     Point* centroids = PyPointsLst_AsPointsArr(centroids_lst, k);
     if (!centroids)  {
         return NULL;
     }
 
+    printf("Passed AsPointArr for centroids in fit function\n");
+    printf("Entering AsPointsArr for datapoints in fit function\n");
     // parse datapoints from python to C
     Point* datapoints = PyPointsLst_AsPointsArr(datapoints_lst, n);
     if (!datapoints)  {
         return NULL;
     }
-    
+
+    printf("Passed AsPointArr for datapoints in fit function\n");
+    printf("Inputs for `run_kmeans`:\n\tk: %i\n\tn: %i\n\titer: %li", k, n, iter);
     // clusters is an array of Points representing the clusters
     clusters = run_kmeans(centroids, datapoints, k, n, iter);
+
+    printf("Passed run_kmeans in fit function\n");
 
     // building python list containing the clusters' centroids
     python_centroids = PyCentroids_FromClusters(clusters, k);
