@@ -310,7 +310,7 @@ class KmeansRunner:
 		kmeans_c_input = (datapoints_df_list, clusters_df_list, self.initialized_KmeansPP_centroids.iter, self.initialized_KmeansPP_centroids.k, self.initialized_KmeansPP_centroids.n, self.initialized_KmeansPP_centroids.dimension)
 
 		# Call C implementation of K-Means
-		self.final_clusters = mykmeanssp.python_fit(*kmeans_c_input)
+		self.final_clusters = mykmeanssp.fit(*kmeans_c_input)
 		self.print_output()
 
 

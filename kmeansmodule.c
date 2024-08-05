@@ -117,7 +117,7 @@ static PyObject* fit(PyObject *self, PyObject *args) {
 
 static PyMethodDef kmeans_FunctionsTable [] = {
     {
-        "python_fit", // Name exposed to Python
+        "fit", // Name exposed to Python
         (PyCFunction) fit, // C wrapper function
         METH_VARARGS, // Received variable args (but really just 1)
         "Runs the K-means algorithm with provided clusters as requested" // Documentation
