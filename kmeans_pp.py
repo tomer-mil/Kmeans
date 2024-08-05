@@ -29,7 +29,6 @@ class Argument(IntEnum):
 	EPSILON = 3
 	FILE1_URL = 4
 	FILE2_URL = 5
-	OTHER = -1
 
 
 class CommandLineReader:
@@ -37,6 +36,7 @@ class CommandLineReader:
 	The CommandLineReader class is used to read the command line arguments, validate their values according to the assignment's
 	guidelines and handling potential errors.
 	"""
+
 	k: int
 	iter: int
 	epsilon: float
@@ -69,9 +69,6 @@ class CommandLineReader:
 			return True
 		except ValueError:
 			return False
-		#
-		# tmp = n.replace('.', '', 1)
-		# return tmp.isdigit() and float(tmp) == int(tmp)
 
 	@classmethod
 	# Checks if the input epsilon argument is a non-negative number
@@ -162,6 +159,7 @@ class DFHandler:
 		4. Inner-joins the DataFrames.
 		5. Defines constants according to the output DataFrame - isCentroid & D columns indices.
 	"""
+
 	ID_COL = ['id']
 	is_centroid_col_index: int
 	d_value_col_index: int
@@ -195,8 +193,8 @@ class DFHandler:
 		self.df2.index = self.df2.index.astype(dtype=int, copy=False)
 
 	def join_dfs(self):
-		joined_df = None
 		joined_df = self.df1.join(self.df2, how='inner', on=self.ID_COL, sort=True)
+
 		# Adding D and isCentroid columns
 		joined_df[IS_CENTROID_COL_NAME] = 0
 		joined_df[D_VALUE_COL_NAME] = 0.0
@@ -240,12 +238,7 @@ class KmeansPPRunner:
 		self.epsilon = self.reader.epsilon
 
 		self.handler = DFHandler(df1_url=self.reader.file1_url, df2_url=self.reader.file2_url)
-
-		try:
-			self.datapoints_df = self.handler.get_joined_df()
-		except ValueError:
-			self.reader.print_invalid_arg_error(arg_type=Argument.OTHER)
-			exit(1)
+		self.datapoints_df = self.handler.get_joined_df()
 
 		self.clusters_df = pd.DataFrame()
 		self.n = self.datapoints_df.shape[0]
@@ -369,7 +362,6 @@ if __name__ == '__main__':
 		runner.run_Kmeans_in_C()
 
 	except (Exception, ValueError, OSError) as e:
-		print(f"Caught error: \n\t{e}")
 		print(ErrorMessages.GENERAL_ERROR_MSG.value)
 		exit(1)
 

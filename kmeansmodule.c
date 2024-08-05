@@ -73,6 +73,10 @@ static PyObject* PyCentroids_FromClusters(Cluster* clusters, int k) {
 }
 
 
+/// @brief Parses the passed inputs from kmeans_pp.py and runs the C implementation of the K-means algorithm
+/// @param self: The PyObject calling this function (following CPython doc.)
+/// @param args: Arguments for the K-means run, passed from kmeans_pp.py. Must follow the following structure: (datapoints: list[list[float]], clusters: list[list[float]], iter: int, k: int, n: int, dimension: int)
+/// @return PyObject* with the output centroids the K-means algorithm had calulated, to be passed back to kmeans_pp.py
 static PyObject* fit(PyObject *self, PyObject *args) {
     PyObject* datapoints_lst;
     PyObject* centroids_lst;
