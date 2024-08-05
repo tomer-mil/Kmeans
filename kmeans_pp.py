@@ -206,9 +206,9 @@ class DFHandler:
 		return joined_df
 
 
-class KmeansPPRunner:
+class KmeansPPCentroids:
 	"""
-	The KmeansPPRunner class handles the initialization and the running of the K-means++ algorithm.
+	The KmeansPPCentroids class handles the initialization and the running of the K-means++ algorithm to generate initial centroids.
 	The class:
 		1. Fetches the input command and verifies the correctness of its values using a reader.
 		2. Initializes the DataFrame object of the dataset using a handler.
@@ -316,10 +316,10 @@ class KmeansPPRunner:
 
 
 class KmeansRunner:
-	initialized_KmeansPP_centroids: KmeansPPRunner
+	initialized_KmeansPP_centroids: KmeansPPCentroids
 	final_clusters: list
 
-	def __init__(self, centroids: KmeansPPRunner):
+	def __init__(self, centroids: KmeansPPCentroids):
 		self.initialized_KmeansPP_centroids = centroids
 		self.final_clusters = list()
 
@@ -353,7 +353,7 @@ class KmeansRunner:
 if __name__ == '__main__':
 	try:
 		# Init K-means clusters from input data using K-means++ algorithm
-		KmeansPP_centroids = KmeansPPRunner()
+		KmeansPP_centroids = KmeansPPCentroids()
 
 		# Initialize a K-means runner with the generated K-means++ clusters
 		runner = KmeansRunner(centroids=KmeansPP_centroids)
@@ -364,6 +364,4 @@ if __name__ == '__main__':
 	except (Exception, ValueError, OSError) as e:
 		print(ErrorMessages.GENERAL_ERROR_MSG.value)
 		exit(1)
-
-
 
