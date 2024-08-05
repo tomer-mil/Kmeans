@@ -6,20 +6,27 @@ from sklearn.cluster import KMeans
 KMEANS_INIT = "k-means++"
 PLOT_MARKER = "o-"
 PLOT_COLOR = "#4287f5"  # A blue color we liked :)
-ELBOW_MARKER = "o"
 ELBOW_COLOR = "#8B0000"  # A red color we liked :)
 XLABEL = "K\n(Number of Clusters)"
 YLABEL = "Average Dispersion"
 TITLE = "Elbow Method For Selection of Optimal \"K\" Clusters"
-ELBOW_ANNOTATION = "Elbow Point: k="
+ELBOW_ANNOTATION = "Elbow Point: K="
 OUTPUT_FILE = "elbow.png"
-ARROW_PROPERTIES = {
+ARROW_PROPS = {
     "facecolor": "black",
     "edgecolor": "black",
     "shrink": 0.05,
     "width": 2,
     "headwidth": 8,
     "headlength": 10
+}
+ELBOW_MARKER_PROPS = {
+    "marker": "o",
+    "markersize": 30,
+    "fillstyle": "none",
+    "markeredgewidth": 2,
+    "markeredgecolor": ELBOW_COLOR,
+    "linestyle": "dashed"
 }
 
 
@@ -32,24 +39,24 @@ def calc_inertia(data, k):
 def plot_elbow_curve(k_values, inertias, elbow_point):
 	plt.figure(figsize=(12, 8))
 	plt.plot(k_values, inertias, PLOT_MARKER, color=PLOT_COLOR)
-	plt.xlabel(XLABEL, fontsize=12)
-	plt.ylabel(YLABEL, fontsize=12)
+	plt.xlabel(XLABEL, fontsize=12, fontweight='bold')
+	plt.ylabel(YLABEL, fontsize=12, fontweight='bold')
 	plt.title(TITLE, fontweight='bold', fontsize=24)
 
 	# Mark the elbow point with a dashed circle
-	plt.plot(elbow_point, inertias[elbow_point - 1], ELBOW_MARKER, markersize=12, fillstyle="none", markeredgewidth=2,
-			 markeredgecolor=ELBOW_COLOR)
+	plt.plot(elbow_point, inertias[elbow_point - 1], **ELBOW_MARKER_PROPS)
 
 	# Add a black arrow to the elbow point
 	plt.annotate(f"{ELBOW_ANNOTATION}{elbow_point}",
 				 xy=(elbow_point, inertias[elbow_point - 1]),
-				 xytext=(elbow_point + 2, inertias[elbow_point - 1] + max(inertias) / 10),
-				 arrowprops=ARROW_PROPERTIES)
+				 xytext=(elbow_point + 4, inertias[elbow_point - 1] + max(inertias) / 10),
+				 fontsize=16,
+				 arrowprops=ARROW_PROPS)
 	# Adjust layout to prevent clipping of labels
 	plt.tight_layout()
 
 	# Save plot
-	plt.savefig(OUTPUT_FILE, dpi=300)
+	plt.savefig(OUTPUT_FILE, dpi=200)
 
 
 def find_elbow_point(inertias):
