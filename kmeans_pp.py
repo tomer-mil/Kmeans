@@ -352,10 +352,10 @@ class KmeansRunner:
 
 if __name__ == '__main__':
 	try:
-		# Init K-means clusters from input data using K-means++ algorithm
+		# Init K-means centroids from input data using K-means++ algorithm
 		KmeansPP_centroids = KmeansPPCentroids()
 
-		# Initialize a K-means runner with the generated K-means++ clusters
+		# Initialize a K-means runner with the generated K-means++ centroids
 		runner = KmeansRunner(centroids=KmeansPP_centroids)
 
 		# Run the K-means algorithm using C code
