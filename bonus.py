@@ -8,7 +8,7 @@ PLOT_MARKER = "o-"
 PLOT_COLOR = "#4287f5"  # A blue color we liked :)
 ELBOW_COLOR = "#8B0000"  # A red color we liked :)
 XLABEL = "K\n(Number of Clusters)"
-YLABEL = "Average Dispersion"
+YLABEL = "Inertia"
 TITLE = "Elbow Method For Selection of Optimal \"K\" Clusters"
 ELBOW_ANNOTATION = "Elbow Point: K="
 OUTPUT_FILE = "elbow.png"
