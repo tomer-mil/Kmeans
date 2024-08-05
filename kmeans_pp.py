@@ -23,13 +23,13 @@ class ErrorMessages(Enum):
 
 
 class Argument(IntEnum):
-	# PYTHON_CALL = 0
 	PY_FILE = 0
 	K = 1
 	ITER = 2
 	EPSILON = 3
 	FILE1_URL = 4
 	FILE2_URL = 5
+	OTHER = -1
 
 
 class CommandLineReader:
@@ -37,6 +37,12 @@ class CommandLineReader:
 	The CommandLineReader class is used to read the command line arguments, validate their values according to the assignment's
 	guidelines and handling potential errors.
 	"""
+	k: int
+	iter: int
+	epsilon: float
+	file1_url: str
+	file2_url: str
+
 	def __init__(self, cmd_input):
 		if len(cmd_input) == 5:
 			# Assuming no `iter` provided, adding default iteration value
@@ -58,8 +64,35 @@ class CommandLineReader:
 	@staticmethod
 	# Checks whether the string `n` represents a float number
 	def is_valid_float(n):
-		tmp = n.replace('.', '', 1)
-		return tmp.isdigit() and float(tmp) == int(tmp)
+		try:
+			float(n)
+			return True
+		except ValueError:
+			return False
+		#
+		# tmp = n.replace('.', '', 1)
+		# return tmp.isdigit() and float(tmp) == int(tmp)
+
+	@classmethod
+	# Checks if the input epsilon argument is a non-negative number
+	def is_valid_epsilon(cls, epsilon):
+		if cls.is_valid_float(epsilon):
+			return float(epsilon) >= 0
+		return False
+
+	@classmethod
+	# Checks if the input K is a natural number greater than 1
+	def is_valid_k(cls, k):
+		if cls.is_natural(k):
+			return int(k) > 1
+		return False
+
+	@classmethod
+	# Checks if the input iter is a natural number smaller than the MAX_ITER defined
+	def is_valid_iter(cls, input_iter):
+		if cls.is_natural(input_iter):
+			return 1 < int(input_iter) < MAX_ITER
+		return False
 
 	@classmethod
 	# Retrieves the file URL suffix (hence type)
@@ -75,15 +108,15 @@ class CommandLineReader:
 	@classmethod
 	def is_valid_arg(cls, arg_type, arg_value):
 		if arg_type == Argument.K:
-			return cls.is_natural(arg_value)
+			return cls.is_valid_k(k=arg_value)
 		elif arg_type == Argument.EPSILON:
-			return cls.is_valid_float(arg_value) and float(arg_value) >= 0
+			return cls.is_valid_epsilon(epsilon=arg_value)
 		elif arg_type == Argument.FILE1_URL:
 			return cls.is_valid_file_url(url=arg_value)
 		elif arg_type == Argument.FILE2_URL:
 			return cls.is_valid_file_url(url=arg_value)
 		elif arg_type == Argument.ITER:
-			return cls.is_natural(arg_value) and 1 < int(arg_value) < MAX_ITER
+			return cls.is_valid_iter(input_iter=arg_value)
 		elif arg_type == Argument.PY_FILE:
 			return True
 		else:
@@ -91,7 +124,7 @@ class CommandLineReader:
 
 	# Prints the appropriate error message
 	@classmethod
-	def print_invalid_arg_error(cls, arg_type: Argument.K):
+	def print_invalid_arg_error(cls, arg_type):
 		if arg_type == Argument.K:
 			print(ErrorMessages.INVALID_K_ERROR_MSG.value)
 		elif arg_type == Argument.EPSILON:
@@ -110,7 +143,7 @@ class CommandLineReader:
 	def validate_cmd_arguments(cls, arguments_list):
 		# Assert number of arguments passed
 		if len(arguments_list) != 6:
-			print(ErrorMessages.GENERAL_ERROR_MSG)
+			print(ErrorMessages.GENERAL_ERROR_MSG.value)
 			sys.exit(1)
 
 		for arg in Argument:
@@ -162,6 +195,7 @@ class DFHandler:
 		self.df2.index = self.df2.index.astype(dtype=int, copy=False)
 
 	def join_dfs(self):
+		joined_df = None
 		joined_df = self.df1.join(self.df2, how='inner', on=self.ID_COL, sort=True)
 		# Adding D and isCentroid columns
 		joined_df[IS_CENTROID_COL_NAME] = 0
@@ -201,18 +235,27 @@ class KmeansPPRunner:
 		# Fetch Inputs
 		self.reader = CommandLineReader(cmd_input=sys.argv)
 
-		#
 		self.k = self.reader.k
 		self.iter = self.reader.iter
 		self.epsilon = self.reader.epsilon
 
 		self.handler = DFHandler(df1_url=self.reader.file1_url, df2_url=self.reader.file2_url)
 
-		self.datapoints_df = self.handler.get_joined_df()
+		try:
+			self.datapoints_df = self.handler.get_joined_df()
+		except ValueError:
+			self.reader.print_invalid_arg_error(arg_type=Argument.OTHER)
+			exit(1)
+
 		self.clusters_df = pd.DataFrame()
 		self.n = self.datapoints_df.shape[0]
 		self.dimension = self.datapoints_df.shape[1] - 2
 		self.initialized_centroids_idx_arr = list()
+
+		# Validate K with updated N
+		if self.k > self.n:
+			self.reader.print_invalid_arg_error(arg_type=Argument.K)
+			exit(1)
 
 		np.random.seed(NP_RANDOM_SEED)
 
@@ -326,7 +369,8 @@ if __name__ == '__main__':
 		runner.run_Kmeans_in_C()
 
 	except (Exception, ValueError, OSError) as e:
-		print(ErrorMessages.GENERAL_ERROR_MSG)
+		print(f"Caught error: \n\t{e}")
+		print(ErrorMessages.GENERAL_ERROR_MSG.value)
 		exit(1)
 
 
