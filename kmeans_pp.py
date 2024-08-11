@@ -5,7 +5,7 @@ import numpy as np
 import mykmeanssp
 
 MAX_ITER = 1000
-DEFAULT_ITER = 200
+DEFAULT_ITER = 300
 EPSILON = 0.001
 
 NP_RANDOM_SEED = 1234

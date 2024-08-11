@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define DEFAULT_ITER 200
+#define DEFAULT_ITER 300
 #define EPSILON 0.001
 #define MAX_LINE_LENGTH 1000
 #define MAX_DOUBLE 1.7976931348623157E+308
